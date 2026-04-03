@@ -165,7 +165,7 @@ async function loadUpdates(){
   if(!S)return;
   try{
     const url=await S.ref(INBOX+'ff_updates.json').getDownloadURL();
-    const r=await fetch(url);if(!r.ok)return;
+    const r=await fetch(url+(url.includes('?')?'&':'?')+'_ts='+Date.now(),{credentials:'omit'});if(!r.ok)return;
     const data=await r.json();
     const updates=data.updates||[];
     if(!updates.length)return;
