@@ -52,28 +52,14 @@
   .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .footer{text-align:center;padding:24px;font-size:12px;color:var(--muted)}
-  .overlay{position:fixed;inset:0;background:rgba(250,250,250,.96);backdrop-filter:blur(6px);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
-  .overlay.hide{display:none}
-  .nbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:36px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.08)}
-  .nbox h2{font-size:20px;color:var(--accent);margin:8px 0 6px}.nbox p{font-size:13px;color:var(--muted);margin-bottom:16px}
 </style>
 </head>
 <body>
 
-<div class="overlay" id="overlay">
-  <div class="nbox">
-    <div style="font-size:44px;margin-bottom:8px">👋</div>
-    <h2>Willkommen!</h2>
-    <p>Wie heisst du?</p>
-    <input type="text" id="nameInp" placeholder="Dein Name" style="text-align:center;font-size:16px;margin-bottom:14px" onkeydown="if(event.key==='Enter')startApp()" />
-    <br><button class="btn btn-p btn-full" onclick="startApp()">🎉 Weiter</button>
-  </div>
-</div>
-
 <div class="header">
   <div class="tag">Familienfest</div>
   <h1>🎉 Anmeldung & Portal</h1>
-  <p id="headerSub">Willkommen!</p>
+  <p>Bitte melde dich an und stimme über das Datum ab</p>
 </div>
 
 <div class="c">
@@ -88,6 +74,10 @@
   <!-- ═══ ANMELDUNG (einmalig, danach fix) ═══ -->
   <div id="regSection">
     <div class="card" id="regForm">
+      <h2>👤 Dein Name <span class="req">*</span></h2>
+      <div class="sub">Wer füllt dieses Formular aus?</div>
+      <label><span class="lbl">Vorname <span class="req">*</span></span><input type="text" id="fName" placeholder="Dein Name" /></label>
+      <div class="sep"></div>
       <h2>📅 Wann passt es dir? <span class="req">*</span></h2>
       <div class="sub">Mehrfachauswahl möglich.</div>
       <div class="date-list">
@@ -96,8 +86,8 @@
         <div class="date-opt" onclick="toggleDate('d3',this)"><div class="check"></div><div><div class="day">28. November 2026</div><div class="wk">Samstag</div></div></div>
       </div>
       <div class="sep"></div>
-      <h2>👥 Wer kommt alles?</h2>
-      <div class="sub">Du bist automatisch dabei. Weitere Begleitpersonen hier eintragen.</div>
+      <h2>👥 Wer kommt noch mit?</h2>
+      <div class="sub">Weitere Begleitpersonen hier eintragen (optional).</div>
       <div id="personChips" style="display:flex;flex-wrap:wrap;margin-bottom:8px"></div>
       <div class="add-row">
         <input type="text" id="personInp" placeholder="Name der Begleitperson" onkeydown="if(event.key==='Enter'){event.preventDefault();addPerson()}" />
@@ -156,23 +146,18 @@ if(saved){
   sentLocs=saved.sentLocs||[];
   sentMsgs=saved.sentMsgs||[];
 }
-if(userName){document.getElementById('overlay').classList.add('hide');initPortal()}
-else setTimeout(()=>document.getElementById('nameInp').focus(),200);
-
-function startApp(){
-  const n=document.getElementById('nameInp').value.trim();if(!n)return;
-  userName=n;saveLocal();
-  document.getElementById('overlay').classList.add('hide');initPortal();
-}
-
-function initPortal(){
-  document.getElementById('headerSub').textContent='Hallo, '+userName+'!';
-  if(regDone)showRegSummary();
-  renderSentLocs();renderSentMsgs();loadUpdates();
-}
+if(userName){document.getElementById('fName').value=userName;}
+if(regDone)showRegSummary();
+renderSentLocs();renderSentMsgs();loadUpdates();
 
 function saveLocal(){
   localStorage.setItem('ff-state',JSON.stringify({name:userName,regDone,sentLocs,sentMsgs}));
+}
+
+function getName(){
+  const n=(document.getElementById('fName')?.value||'').trim();
+  if(!n){showError('Bitte gib deinen Namen ein.');return ''}
+  userName=n;saveLocal();return n;
 }
 
 // ═══ UPDATES VOM ORGANISATOR ═══
@@ -214,21 +199,22 @@ function renderPersons(){
 
 async function submitReg(){
   hideError();
+  const name=getName();if(!name)return;
   if(selectedDates.length===0){showError('Bitte wähle mindestens ein Datum.');return}
   if(!S){showError('Firebase nicht verfügbar.');return}
   const btn=document.getElementById('regBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Senden...';
-  const allP=[userName,...persons];
-  const safe=userName.toLowerCase().replace(/[^a-z0-9äöü]/g,'_').slice(0,30);
+  const allP=[name,...persons];
+  const safe=name.toLowerCase().replace(/[^a-z0-9äöü]/g,'_').slice(0,30);
   const dl={d1:'14.11.2026',d2:'21.11.2026',d3:'28.11.2026'};
   try{
-    let desc='👤 '+userName+'\n\n📅 Datumswahl:\n';
+    let desc='👤 '+name+'\n\n📅 Datumswahl:\n';
     selectedDates.forEach(d=>{desc+='  ✅ '+(dl[d]||d)+'\n'});
     desc+='\n👥 Teilnehmer ('+allP.length+'):\n';allP.forEach(p=>{desc+='  • '+p+'\n'});
     await putJson(INBOX+'ff_reg_'+safe+'.json',{
-      id:'ff_reg_'+safe,title:'🎉 Anmeldung: '+userName+(persons.length?' (+'+persons.length+')':''),
-      description:desc.trim(),priority:3,senderApp:'Familienfest Portal',senderName:userName,
+      id:'ff_reg_'+safe,title:'🎉 Anmeldung: '+name+(persons.length?' (+'+persons.length+')':''),
+      description:desc.trim(),priority:3,senderApp:'Familienfest Portal',senderName:name,
       tags:['familienfest','anmeldung'],files:[],createdAt:new Date().toISOString(),status:'pending',entityType:'task',
-      _ffData:{voter:userName,selectedDates,participants:allP.map(p=>({name:p}))}
+      _ffData:{voter:name,selectedDates,participants:allP.map(p=>({name:p}))}
     });
     regDone=true;saveLocal();showRegSummary();
     toast('✅ Anmeldung gesendet!');
@@ -250,20 +236,21 @@ function showRegSummary(){
 
 // ═══ ORTSVORSCHLÄGE ═══
 async function submitLoc(){
-  const name=document.getElementById('locName').value.trim();if(!name){showError('Bitte Ort eingeben.');return}
+  const locName=document.getElementById('locName').value.trim();if(!locName){showError('Bitte Ort eingeben.');return}
+  const sender=userName||document.getElementById('fName')?.value.trim()||'Anonym';
   const link=document.getElementById('locLink').value.trim();
   const desc=document.getElementById('locDesc').value.trim();
   if(!S){showError('Firebase nicht verfügbar.');return}
   const btn=document.getElementById('locBtn');btn.disabled=true;btn.textContent='Senden...';
   const locId='ff_loc_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
   try{
-    const fullDesc='Vorgeschlagen von '+userName+(link?'\n🔗 '+link:'')+(desc?'\n\n'+desc:'');
+    const fullDesc='Vorgeschlagen von '+sender+(link?'\n🔗 '+link:'')+(desc?'\n\n'+desc:'');
     await putJson(INBOX+locId+'.json',{
-      id:locId,title:'📍 Ortsidee: '+name,description:fullDesc,priority:4,
-      senderApp:'Familienfest Portal',senderName:userName,tags:['familienfest','ortsidee'],
+      id:locId,title:'📍 Ortsidee: '+locName,description:fullDesc,priority:4,
+      senderApp:'Familienfest Portal',senderName:sender,tags:['familienfest','ortsidee'],
       files:[],createdAt:new Date().toISOString(),status:'pending',entityType:'task',
     });
-    sentLocs.push({name,link,time:new Date().toISOString()});saveLocal();renderSentLocs();
+    sentLocs.push({name:locName,link,time:new Date().toISOString()});saveLocal();renderSentLocs();
     document.getElementById('locName').value='';document.getElementById('locLink').value='';document.getElementById('locDesc').value='';
     toast('📍 Vorschlag gesendet!');
   }catch(e){showError('Fehler: '+e.message)}
@@ -278,13 +265,14 @@ function renderSentLocs(){
 // ═══ NACHRICHTEN ═══
 async function submitMsg(){
   const text=document.getElementById('msgText').value.trim();if(!text){showError('Bitte Nachricht eingeben.');return}
+  const sender=userName||document.getElementById('fName')?.value.trim()||'Anonym';
   if(!S){showError('Firebase nicht verfügbar.');return}
   const btn=document.getElementById('msgBtn');btn.disabled=true;btn.textContent='Senden...';
   const msgId='ff_msg_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
   try{
     await putJson(INBOX+msgId+'.json',{
-      id:msgId,title:'💬 '+userName+': '+text.slice(0,60),description:text,priority:3,
-      senderApp:'Familienfest Portal',senderName:userName,tags:['familienfest'],
+      id:msgId,title:'💬 '+sender+': '+text.slice(0,60),description:text,priority:3,
+      senderApp:'Familienfest Portal',senderName:sender,tags:['familienfest'],
       files:[],createdAt:new Date().toISOString(),status:'pending',entityType:'message',
     });
     sentMsgs.push({text:text.slice(0,80),time:new Date().toISOString()});saveLocal();renderSentMsgs();
