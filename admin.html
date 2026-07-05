@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Übersicht — Familien-Brunch</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f5f2;--surface:#fff;--surface2:#f4f4f5;--border:#e6e4df;--text:#1f1d1a;--muted:#7a756c;
+    --accent:#b5713f;--accent-d:#9a5c30;
+    --green:#2f8f52;--green-bg:rgba(47,143,82,.10);
+    --red:#c0503f;--red-bg:rgba(192,80,63,.09);
+    --amber:#b5893f;--amber-bg:rgba(181,137,63,.12);
+    --r:12px;--sh:0 1px 3px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.04)
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .header{background:linear-gradient(160deg,var(--accent),var(--accent-d));color:#fff;padding:32px 24px;text-align:center}
+  .header .tag{font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.85;margin-bottom:8px}
+  .header h1{font-size:24px;font-weight:700}
+  .header p{font-size:13px;opacity:.9;margin-top:4px}
+  .c{max-width:840px;margin:24px auto 40px;padding:0 16px}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 14px;text-align:center;box-shadow:var(--sh)}
+  .stat .n{font-size:28px;font-weight:700;letter-spacing:-.5px}
+  .stat .l{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+  .stat.g .n{color:var(--green)}.stat.r .n{color:var(--red)}.stat.a .n{color:var(--amber)}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+  .card-h{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .card-h h2{font-size:15px;font-weight:700}
+  .refresh{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--text)}
+  .refresh:hover{background:var(--border)}
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:700;background:var(--surface2)}
+  td.name{white-space:normal;font-weight:600;min-width:170px}
+  td .cmt{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:3px;white-space:normal}
+  tr:last-child td{border-bottom:none}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;font-size:12px;font-weight:700}
+  .badge.zugesagt{background:var(--green-bg);color:var(--green)}
+  .badge.abgesagt{background:var(--red-bg);color:var(--red)}
+  .badge.offen{background:var(--amber-bg);color:var(--amber)}
+  td.num{text-align:center;font-weight:700}td.num .off{color:var(--muted);font-weight:400}
+  .link-btn{background:none;border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--accent)}
+  .link-btn:hover{background:var(--surface2)}
+  tfoot td{background:var(--surface2);font-weight:700;border-top:2px solid var(--border)}
+  .loading,.err{padding:40px;text-align:center;color:var(--muted);font-size:14px}
+  .footer{max-width:840px;margin:0 auto;padding:8px 16px 40px;text-align:center;font-size:11px;color:var(--muted);line-height:1.7}
+  .footer code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:11px 20px;background:var(--surface);border:2px solid var(--green);border-radius:12px;font-size:13px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.12);z-index:100}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="tag">Übersicht</div>
+  <h1>Familien-Brunch — Zu- & Absagen</h1>
+  <p id="hEvent"></p>
+</div>
+
+<div class="c">
+  <div class="stats" id="stats"></div>
+  <div class="card">
+    <div class="card-h">
+      <h2>Gästeliste</h2>
+      <button class="refresh" id="refreshBtn" onclick="load()">↻ Aktualisieren</button>
+    </div>
+    <div class="table-wrap"><div class="loading" id="body">Wird geladen …</div></div>
+  </div>
+</div>
+
+<div class="footer" id="footer"></div>
+
+<script>
+const API = '/.netlify/functions/rsvp';
+load();
+
+async function load(){
+  const body = document.getElementById('body');
+  try{
+    const r = await fetch(API + '?action=all');
+    const data = await r.json();
+    if(!r.ok || !data.ok) throw new Error(data.error || 'Fehler beim Laden');
+    render(data);
+  }catch(e){
+    body.className = 'err';
+    body.textContent = '⚠️ ' + e.message;
+  }
+}
+
+function render(data){
+  const { guests, totals, event, project } = data;
+  document.getElementById('hEvent').textContent = event.date + ' · ' + event.time;
+
+  document.getElementById('stats').innerHTML = `
+    ${stat('g', totals.zugesagt, 'Zugesagt')}
+    ${stat('r', totals.abgesagt, 'Abgesagt')}
+    ${stat('a', totals.offen, 'Offen')}
+    ${stat('', totals.personen, 'Personen total')}`;
+
+  const rows = guests.map(g => {
+    const b = `<span class="badge ${g.status}">${badgeIcon(g.status)} ${cap(g.status)}</span>`;
+    const persons = g.status === 'zugesagt'
+      ? `${g.count} <span style="color:var(--muted);font-weight:400">(${g.adults}E/${g.kids}K)</span>`
+      : '<span class="off">—</span>';
+    const cmt = g.comment ? `<span class="cmt">💬 ${esc(g.comment)}</span>` : '';
+    return `<tr>
+      <td class="name">${esc(g.name)}${cmt}</td>
+      <td>${b}</td>
+      <td class="num">${persons}</td>
+      <td><button class="link-btn" onclick="copyLink('${g.slug}',this)">Link kopieren</button></td>
+    </tr>`;
+  }).join('');
+
+  const tableWrap = document.querySelector('.table-wrap');
+  tableWrap.innerHTML = `<table>
+    <thead><tr><th>Name</th><th>Status</th><th>Personen</th><th>Einladung</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr>
+      <td>Total (${totals.families} Familien)</td>
+      <td>${totals.zugesagt} zugesagt · ${totals.abgesagt} abgesagt · ${totals.offen} offen</td>
+      <td class="num">${totals.personen}</td>
+      <td></td>
+    </tr></tfoot>
+  </table>`;
+
+  document.getElementById('footer').innerHTML =
+    `Quantus-Projekt · ${esc(project.name)}<br>` +
+    `${esc(project.extId)} · <code>${esc(project.id)}</code>`;
+}
+
+function stat(cls,n,l){ return `<div class="stat ${cls}"><div class="n">${n}</div><div class="l">${l}</div></div>`; }
+function badgeIcon(s){ return s==='zugesagt'?'✅':s==='abgesagt'?'❌':'•'; }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
+
+function copyLink(slug,btn){
+  const url = location.origin + '/?gast=' + slug;
+  const done = () => { const t=btn.textContent; btn.textContent='✓ Kopiert'; toast('🔗 ' + url); setTimeout(()=>btn.textContent=t,1600); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(()=>prompt('Link kopieren:',url));
+  }else{ prompt('Link kopieren:',url); }
+}
+function toast(m){
+  const d=document.createElement('div'); d.className='toast'; d.textContent=m;
+  document.body.appendChild(d);
+  setTimeout(()=>{ d.style.transition='opacity .3s'; d.style.opacity='0'; setTimeout(()=>d.remove(),300); },2600);
+}
+</script>
+</body>
+</html>

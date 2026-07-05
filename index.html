@@ -3,301 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎉 Familienfest — Portal</title>
+<meta name="robots" content="noindex">
+<title>Familien-Brunch — Einladung</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-
 <style>
-  :root{--bg:#fafafa;--surface:#fff;--surface2:#f4f4f5;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--accent:#c4653a;--accent-l:rgba(196,101,58,.08);--accent-b:rgba(196,101,58,.2);--green:#16a34a;--green-bg:rgba(22,163,74,.08);--green-b:rgba(22,163,74,.25);--blue:#2563eb;--blue-bg:rgba(37,99,235,.06);--blue-b:rgba(37,99,235,.2);--r:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04)}
+  :root{
+    --bg:#f6f5f2;--surface:#fff;--surface2:#f4f4f5;--border:#e6e4df;--text:#1f1d1a;--muted:#7a756c;
+    --accent:#b5713f;--accent-d:#9a5c30;--accent-l:rgba(181,113,63,.09);--accent-b:rgba(181,113,63,.28);
+    --green:#2f8f52;--green-bg:rgba(47,143,82,.09);--green-b:rgba(47,143,82,.35);
+    --red:#c0503f;--red-bg:rgba(192,80,63,.08);--red-b:rgba(192,80,63,.32);
+    --r:12px;--sh:0 1px 3px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.04)
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-  .header{background:var(--accent);color:#fff;padding:28px 24px 24px;text-align:center}
-  .header .tag{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.85;margin-bottom:6px}
-  .header h1{font-size:24px;font-weight:700}.header p{font-size:14px;opacity:.8;margin-top:4px}
-  .c{max-width:560px;margin:-20px auto 40px;padding:0 16px;position:relative;z-index:1}
+  body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
+  .header{background:linear-gradient(160deg,var(--accent),var(--accent-d));color:#fff;padding:40px 24px 44px;text-align:center}
+  .header .tag{font-size:12px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;opacity:.85;margin-bottom:10px}
+  .header h1{font-size:27px;font-weight:700;letter-spacing:-.3px}
+  .header .fam{font-size:14px;opacity:.9;margin-top:6px;font-weight:500}
+  .c{max-width:520px;margin:-28px auto 48px;padding:0 16px;position:relative;z-index:1}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--sh);margin-bottom:16px}
-  .card h2{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-  .card .sub{font-size:13px;color:var(--muted);margin-bottom:14px}
-  .sep{height:1px;background:var(--border);margin:14px 0}
-  label{display:block;margin-bottom:12px}
-  label .lbl{font-size:13px;font-weight:600;margin-bottom:5px;display:block}
-  label .lbl .req{color:var(--accent)}
-  input[type="text"],textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);background:var(--surface);transition:border-color .2s}
-  input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l)}
-  textarea{min-height:60px;resize:vertical}
-  .date-list{display:flex;flex-direction:column;gap:8px}
-  .date-opt{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface2);border:2px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all .2s;user-select:none}
-  .date-opt:hover{border-color:var(--green-b)}.date-opt.on{border-color:var(--green);background:var(--green-bg)}
-  .date-opt .check{width:26px;height:26px;border-radius:7px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:var(--surface);transition:all .15s}
-  .date-opt.on .check{background:var(--green);border-color:var(--green);color:#fff}
-  .date-opt .day{font-weight:700;font-size:15px}.date-opt .wk{font-size:12px;color:var(--muted)}
-  .chip{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;background:rgba(90,143,186,.08);border:1px solid rgba(90,143,186,.2);border-radius:100px;font-size:13px;font-weight:600;color:#4a7faa;margin:3px}
-  .chip .x{background:none;border:none;color:rgba(90,143,186,.4);cursor:pointer;font-size:13px}.chip .x:hover{color:#c44b4b}
-  .add-row{display:flex;gap:8px}.add-row input{flex:1}
-  .btn{padding:10px 16px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--text);transition:all .15s}
-  .btn:hover{background:var(--border)}.btn:disabled{opacity:.5;cursor:not-allowed}
-  .btn-p{background:var(--accent);border-color:var(--accent);color:#fff}.btn-p:hover{background:#a8532e}
-  .btn-full{width:100%;padding:14px;font-size:15px;font-weight:700;border-radius:var(--r);box-shadow:0 2px 8px rgba(196,101,58,.2)}
-  /* Updates */
-  .update-item{padding:12px 14px;background:var(--blue-bg);border:1px solid var(--blue-b);border-radius:8px;margin-bottom:8px}
-  .update-item .u-text{font-size:14px;font-weight:600;line-height:1.5;white-space:pre-wrap}
-  .update-item .u-meta{font-size:11px;color:var(--muted);margin-top:4px}
-  /* Sent items */
-  .sent-item{padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;font-size:13px}
-  .sent-item .s-title{font-weight:700}.sent-item .s-meta{font-size:11px;color:var(--muted);margin-top:2px}
-  /* Fixed summary */
-  .fixed-box{padding:14px;background:var(--green-bg);border:1px solid var(--green-b);border-radius:8px;font-size:14px;line-height:1.7}
-  .fixed-box strong{color:var(--green)}
-  .error-msg{background:rgba(196,101,58,.08);border:1px solid var(--accent-b);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent);margin-bottom:14px;display:none}
-  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+  .greet{font-size:20px;font-weight:700;letter-spacing:-.2px;margin-bottom:6px}
+  .greet-sub{font-size:14px;color:var(--muted)}
+  .event{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+  .event .row{display:flex;align-items:flex-start;gap:12px;font-size:15px}
+  .event .row .ic{width:22px;text-align:center;flex-shrink:0;font-size:16px}
+  .event .row .k{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .event .row .v{font-weight:600}
+  .intro{font-size:14px;color:var(--muted);margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+  h2{font-size:16px;font-weight:700;margin-bottom:4px}
+  .sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .rsvp-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .choice{padding:16px 12px;border:2px solid var(--border);border-radius:var(--r);background:var(--surface2);cursor:pointer;text-align:center;font-weight:700;font-size:15px;transition:all .15s;user-select:none;-webkit-tap-highlight-color:transparent}
+  .choice .ce{display:block;font-size:22px;margin-bottom:4px}
+  .choice:hover{border-color:var(--muted)}
+  .choice.on-yes{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+  .choice.on-no{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+  .details{margin-top:18px;display:none}
+  .details.show{display:block;animation:fade .25s}
+  @keyframes fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .count-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .stepper .lbl{font-size:13px;font-weight:600;margin-bottom:6px;display:block}
+  .stepper .ctl{display:flex;align-items:center;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .stepper button{width:42px;height:44px;border:none;background:var(--surface2);font-size:20px;font-weight:600;cursor:pointer;color:var(--text);transition:background .12s;-webkit-tap-highlight-color:transparent}
+  .stepper button:hover{background:var(--border)}
+  .stepper input{flex:1;text-align:center;border:none;font-size:16px;font-weight:700;font-family:inherit;color:var(--text);background:var(--surface);width:100%;-moz-appearance:textfield}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  label .lbl{font-size:13px;font-weight:600;margin-bottom:6px;display:block}
+  textarea{width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;color:var(--text);background:var(--surface);min-height:70px;resize:vertical;transition:border-color .2s}
+  textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-l)}
+  .btn-full{width:100%;padding:15px;font-size:15px;font-weight:700;border:none;border-radius:var(--r);background:var(--accent);color:#fff;cursor:pointer;margin-top:18px;box-shadow:0 2px 10px rgba(181,113,63,.25);transition:background .15s}
+  .btn-full:hover{background:var(--accent-d)}
+  .btn-full:disabled{opacity:.55;cursor:not-allowed}
+  .status-banner{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--r);font-size:14px;font-weight:600;margin-bottom:4px}
+  .status-banner.yes{background:var(--green-bg);border:1px solid var(--green-b);color:var(--green)}
+  .status-banner.no{background:var(--red-bg);border:1px solid var(--red-b);color:var(--red)}
+  .status-banner .big{font-size:22px}
+  .status-meta{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.7}
+  .status-meta strong{color:var(--text)}
+  .edit-link{background:none;border:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;padding:0;margin-top:14px;text-decoration:underline}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:-3px;margin-right:8px}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .footer{text-align:center;padding:24px;font-size:12px;color:var(--muted)}
+  .notice{text-align:center;padding:8px 0}
+  .notice .em{font-size:40px;margin-bottom:12px}
+  .notice h2{font-size:18px;margin-bottom:8px}
+  .notice p{font-size:14px;color:var(--muted)}
+  .footer{text-align:center;padding:20px 24px 32px;font-size:11px;color:var(--muted)}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 22px;background:var(--surface);border:2px solid var(--green);border-radius:12px;font-size:14px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.12);z-index:100}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="tag">Familienfest</div>
-  <h1>🎉 Anmeldung & Portal</h1>
-  <p>Bitte melde dich an und stimme über das Datum ab</p>
+  <div class="tag">Einladung</div>
+  <h1 id="hTitle">Familien-Brunch</h1>
+  <div class="fam" id="hFam">Maag &amp; Rusterholz</div>
 </div>
 
-<div class="c">
-  <div id="errorMsg" class="error-msg"></div>
-
-  <!-- 📢 Updates vom Organisator -->
-  <div class="card" id="updatesCard" style="display:none">
-    <h2>📢 Infos vom Organisator</h2>
-    <div id="updatesList"></div>
-  </div>
-
-  <!-- ═══ ANMELDUNG (einmalig, danach fix) ═══ -->
-  <div id="regSection">
-    <div class="card" id="regForm">
-      <h2>👤 Dein Name <span class="req">*</span></h2>
-      <div class="sub">Wer füllt dieses Formular aus?</div>
-      <label><span class="lbl">Vorname <span class="req">*</span></span><input type="text" id="fName" placeholder="Dein Name" /></label>
-      <div class="sep"></div>
-      <h2>📅 Wann passt es dir? <span class="req">*</span></h2>
-      <div class="sub">Mehrfachauswahl möglich.</div>
-      <div class="date-list">
-        <div class="date-opt" onclick="toggleDate('d1',this)"><div class="check"></div><div><div class="day">14. November 2026</div><div class="wk">Samstag</div></div></div>
-        <div class="date-opt" onclick="toggleDate('d2',this)"><div class="check"></div><div><div class="day">21. November 2026</div><div class="wk">Samstag</div></div></div>
-        <div class="date-opt" onclick="toggleDate('d3',this)"><div class="check"></div><div><div class="day">28. November 2026</div><div class="wk">Samstag</div></div></div>
-      </div>
-      <div class="sep"></div>
-      <h2>👥 Wer kommt noch mit?</h2>
-      <div class="sub">Weitere Begleitpersonen hier eintragen (optional).</div>
-      <div id="personChips" style="display:flex;flex-wrap:wrap;margin-bottom:8px"></div>
-      <div class="add-row">
-        <input type="text" id="personInp" placeholder="Name der Begleitperson" onkeydown="if(event.key==='Enter'){event.preventDefault();addPerson()}" />
-        <button class="btn" onclick="addPerson()">+ Person</button>
-      </div>
-      <div class="sep"></div>
-      <button class="btn btn-p btn-full" id="regBtn" onclick="submitReg()">📤 Anmeldung absenden</button>
-    </div>
-  </div>
-
-  <!-- Fixer Anmeldungs-Zusammenfassung -->
-  <div class="card" id="regSummary" style="display:none">
-    <h2>✅ Deine Anmeldung</h2>
-    <div id="regSummaryContent" class="fixed-box"></div>
-  </div>
-
-  <!-- ═══ ORTSVORSCHLÄGE (immer offen, mehrere) ═══ -->
-  <div class="card">
-    <h2>📍 Ortsvorschläge</h2>
-    <div class="sub">Schlage Orte vor — du kannst mehrere senden.</div>
-    <div id="sentLocations"></div>
-    <div class="sep"></div>
-    <label><span class="lbl">Name / Ort</span><input type="text" id="locName" placeholder="z.B. Restaurant Rössli, Herisau" /></label>
-    <label><span class="lbl">Link / Website (optional)</span><input type="text" id="locLink" placeholder="https://..." /></label>
-    <label><span class="lbl">Begründung (optional)</span><textarea id="locDesc" placeholder="Warum dieser Ort?" style="min-height:40px"></textarea></label>
-    <button class="btn btn-p" id="locBtn" onclick="submitLoc()">📍 Vorschlag senden</button>
-  </div>
-
-  <!-- ═══ NACHRICHTEN (immer offen, mehrere) ═══ -->
-  <div class="card">
-    <h2>💬 Nachrichten</h2>
-    <div class="sub">Schreibe jederzeit Nachrichten — Wünsche, Fragen, Ideen.</div>
-    <div id="sentMessages"></div>
-    <div class="sep"></div>
-    <label><span class="lbl">Deine Nachricht</span><textarea id="msgText" placeholder="Schreib hier..."></textarea></label>
-    <button class="btn btn-p" id="msgBtn" onclick="submitMsg()">💬 Nachricht senden</button>
-  </div>
+<div class="c" id="app">
+  <div class="card"><div class="notice"><div class="em">⏳</div><p>Einladung wird geladen …</p></div></div>
 </div>
 
-<div class="footer">Familienfest · Portal · PRJ-NFYW5</div>
+<div class="footer" id="footer"></div>
 
 <script>
-const API = '/.netlify/functions';
+const API = '/.netlify/functions/rsvp';
+const params = new URLSearchParams(location.search);
+const slug = params.get('gast');
 
-let userName='',selectedDates=[],persons=[];
-let sentLocs=[],sentMsgs=[];
-let regDone=false;
+const root = document.getElementById('app');
 
-// ═══ INIT ═══
-const saved=JSON.parse(localStorage.getItem('ff-state')||'null');
-if(saved){
-  userName=saved.name||'';
-  regDone=!!saved.regDone;
-  sentLocs=saved.sentLocs||[];
-  sentMsgs=saved.sentMsgs||[];
-}
-if(userName) document.getElementById('fName').value=userName;
-if(regDone) showRegSummary();
-renderSentLocs();renderSentMsgs();loadUpdates();
+let state = { guest: null, event: null, editing: false };
 
-function saveLocal(){
-  localStorage.setItem('ff-state',JSON.stringify({name:userName,regDone,sentLocs,sentMsgs}));
-}
+init();
 
-function getName(){
-  const n=(document.getElementById('fName')?.value||'').trim();
-  if(!n){showError('Bitte gib deinen Namen ein.');return ''}
-  userName=n;saveLocal();return n;
-}
-
-// ═══ SUBMIT HELPER ═══
-async function submitToInbox(data) {
-  const r = await fetch(API + '/inbox-submit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!r.ok) {
-    const err = await r.json().catch(() => ({}));
-    throw new Error(err.error || 'HTTP ' + r.status);
+async function init(){
+  if(!slug){ renderNoSlug(); return; }
+  try{
+    const r = await fetch(API + '?gast=' + encodeURIComponent(slug));
+    const data = await r.json();
+    if(!r.ok || !data.ok){ renderUnknown(); return; }
+    state.guest = data.guest;
+    state.event = data.event;
+    document.getElementById('hTitle').textContent = data.event.title;
+    document.getElementById('hFam').textContent = data.event.family;
+    state.editing = state.guest.status === 'offen';
+    render();
+  }catch(e){
+    root.innerHTML = card(notice('⚠️','Verbindungsproblem','Bitte lade die Seite später erneut.'));
   }
-  return r.json();
 }
 
-// ═══ UPDATES VOM ORGANISATOR ═══
-async function loadUpdates(){
-  try{
-    const r=await fetch(API+'/inbox-updates');
-    if(!r.ok)return;
-    const data=await r.json();
-    const updates=data.updates||[];
-    if(!updates.length)return;
-    document.getElementById('updatesCard').style.display='';
-    document.getElementById('updatesList').innerHTML=updates.slice().reverse().map(u=>
-      `<div class="update-item"><div class="u-text">${esc(u.text)}</div><div class="u-meta">${u.createdAt?new Date(u.createdAt).toLocaleString('de-CH'):''}</div></div>`
-    ).join('');
-  }catch(e){/* no updates yet */}
+function render(){
+  const g = state.guest, ev = state.event;
+  let html = '';
+
+  // Begrüssung + Event
+  html += `<div class="card">
+    <div class="greet">${esc(g.greeting)}</div>
+    <div class="greet-sub">wir freuen uns, euch persönlich einzuladen.</div>
+    <div class="event">
+      ${eventRow('🥐','Anlass', esc(ev.title))}
+      ${eventRow('📅','Datum', esc(ev.date))}
+      ${eventRow('🕙','Zeit', esc(ev.time))}
+      ${eventRow('📍','Ort', esc(ev.place))}
+    </div>
+    <div class="intro">${esc(ev.intro)}</div>
+  </div>`;
+
+  // RSVP: Status-Anzeige oder Formular
+  if(g.status !== 'offen' && !state.editing){
+    html += card(statusView(g));
+  }else{
+    html += card(rsvpForm(g));
+  }
+
+  root.innerHTML = html;
+  wireForm();
 }
 
-// ═══ REGISTRATION ═══
-function toggleDate(id,el){
-  if(regDone)return;
-  const i=selectedDates.indexOf(id);
-  if(i>=0){selectedDates.splice(i,1);el.classList.remove('on');el.querySelector('.check').textContent=''}
-  else{selectedDates.push(id);el.classList.add('on');el.querySelector('.check').textContent='✓'}
+function eventRow(ic,k,v){
+  return `<div class="row"><div class="ic">${ic}</div><div><div class="k">${k}</div><div class="v">${v}</div></div></div>`;
 }
 
-function addPerson(){
-  if(regDone)return;
-  const inp=document.getElementById('personInp');const n=inp.value.trim();if(!n)return;
-  if(persons.some(p=>p.toLowerCase()===n.toLowerCase())){inp.value='';return}
-  persons.push(n);inp.value='';renderPersons();
-}
-function removePerson(i){persons.splice(i,1);renderPersons()}
-function renderPersons(){
-  document.getElementById('personChips').innerHTML=persons.map((p,i)=>
-    `<span class="chip">👤 ${esc(p)}<button class="x" onclick="removePerson(${i})">✕</button></span>`
-  ).join('');
-}
-
-async function submitReg(){
-  hideError();
-  const name=getName();if(!name)return;
-  if(selectedDates.length===0){showError('Bitte wähle mindestens ein Datum.');return}
-  const btn=document.getElementById('regBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Senden...';
-  const allP=[name,...persons];
-  const safe=name.toLowerCase().replace(/[^a-z0-9äöü]/g,'_').slice(0,30);
-  const dl={d1:'14.11.2026',d2:'21.11.2026',d3:'28.11.2026'};
-  try{
-    let desc='👤 '+name+'\n\n📅 Datumswahl:\n';
-    selectedDates.forEach(d=>{desc+='  ✅ '+(dl[d]||d)+'\n'});
-    desc+='\n👥 Teilnehmer ('+allP.length+'):\n';allP.forEach(p=>{desc+='  • '+p+'\n'});
-    await submitToInbox({
-      id:'ff_reg_'+safe,title:'🎉 Anmeldung: '+name+(persons.length?' (+'+persons.length+')':''),
-      description:desc.trim(),priority:3,senderApp:'Familienfest Portal',senderName:name,
-      tags:['familienfest','anmeldung'],createdAt:new Date().toISOString(),status:'pending',entityType:'task',
-      _ffData:{voter:name,selectedDates,participants:allP.map(p=>({name:p}))}
-    });
-    regDone=true;saveLocal();showRegSummary();
-    toast('✅ Anmeldung gesendet!');
-  }catch(e){showError('Fehler: '+e.message);btn.disabled=false;btn.innerHTML='📤 Anmeldung absenden'}
+function statusView(g){
+  const yes = g.status === 'zugesagt';
+  let meta = '';
+  if(yes){
+    const ad = g.adults + ' ' + (g.adults===1?'Erwachsener':'Erwachsene');
+    const ki = g.kids + ' ' + (g.kids===1?'Kind':'Kinder');
+    meta = `<div class="status-meta"><strong>Personen:</strong> ${g.count} (${ad}, ${ki})`;
+    if(g.comment) meta += `<br><strong>Bemerkung:</strong> ${esc(g.comment)}`;
+    meta += `</div>`;
+  }else if(g.comment){
+    meta = `<div class="status-meta"><strong>Bemerkung:</strong> ${esc(g.comment)}</div>`;
+  }
+  return `
+    <div class="status-banner ${yes?'yes':'no'}">
+      <span class="big">${yes?'✅':'❌'}</span>
+      <span>${yes?'Ihr habt zugesagt — wir freuen uns!':'Ihr habt leider abgesagt.'}</span>
+    </div>
+    ${meta}
+    <button class="edit-link" id="editBtn">Antwort ändern</button>`;
 }
 
-function showRegSummary(){
-  document.getElementById('regForm').style.display='none';
-  document.getElementById('regSummary').style.display='';
-  const dl={d1:'14. Nov',d2:'21. Nov',d3:'28. Nov'};
-  const s=JSON.parse(localStorage.getItem('ff-state')||'{}');
-  const dates=selectedDates.length?selectedDates:(s.dates||[]);
-  const ps=persons.length?[userName,...persons]:(s.persons||[userName]);
-  document.getElementById('regSummaryContent').innerHTML=
-    '<strong>📅 Daten:</strong> '+(dates.map(d=>dl[d]||d).join(', ')||'—')+'<br>'+
-    '<strong>👥 Personen:</strong> '+ps.map(esc).join(', ');
+function rsvpForm(g){
+  const yes = g.status === 'zugesagt';
+  const no = g.status === 'abgesagt';
+  const adults = g.adults ?? g.defaultAdults ?? 2;
+  const kids = g.kids ?? 0;
+  return `
+    <h2>Eure Rückmeldung</h2>
+    <div class="sub">Seid ihr beim Brunch dabei?</div>
+    <div class="rsvp-choice">
+      <div class="choice ${yes?'on-yes':''}" id="cYes" data-v="zugesagt"><span class="ce">🙌</span>Wir kommen</div>
+      <div class="choice ${no?'on-no':''}" id="cNo" data-v="abgesagt"><span class="ce">😔</span>Wir kommen nicht</div>
+    </div>
+    <div class="details ${yes?'show':''}" id="details">
+      <div class="count-grid">
+        ${stepper('Erwachsene','adults',adults)}
+        ${stepper('Kinder','kids',kids)}
+      </div>
+    </div>
+    <div style="margin-top:18px">
+      <label><span class="lbl">Bemerkung (optional)</span>
+      <textarea id="comment" placeholder="z.B. Allergien, Ankunftszeit, Grüsse …">${esc(g.comment||'')}</textarea></label>
+    </div>
+    <button class="btn-full" id="saveBtn" disabled>Antwort speichern</button>`;
 }
 
-// ═══ ORTSVORSCHLÄGE ═══
-async function submitLoc(){
-  const locName=document.getElementById('locName').value.trim();if(!locName){showError('Bitte Ort eingeben.');return}
-  const sender=userName||document.getElementById('fName')?.value.trim()||'Anonym';
-  const link=document.getElementById('locLink').value.trim();
-  const desc=document.getElementById('locDesc').value.trim();
-  const btn=document.getElementById('locBtn');btn.disabled=true;btn.textContent='Senden...';
-  const locId='ff_loc_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-  try{
-    await submitToInbox({
-      id:locId,title:'📍 Ortsidee: '+locName,
-      description:'Vorgeschlagen von '+sender+(link?'\n🔗 '+link:'')+(desc?'\n\n'+desc:''),
-      priority:4,senderApp:'Familienfest Portal',senderName:sender,
-      tags:['familienfest','ortsidee'],createdAt:new Date().toISOString(),status:'pending',entityType:'task',
-    });
-    sentLocs.push({name:locName,link,time:new Date().toISOString()});saveLocal();renderSentLocs();
-    document.getElementById('locName').value='';document.getElementById('locLink').value='';document.getElementById('locDesc').value='';
-    toast('📍 Vorschlag gesendet!');
-  }catch(e){showError('Fehler: '+e.message)}
-  btn.disabled=false;btn.textContent='📍 Vorschlag senden';
+function stepper(label,name,val){
+  return `<div class="stepper"><span class="lbl">${label}</span>
+    <div class="ctl">
+      <button type="button" data-step="${name}" data-d="-1">−</button>
+      <input type="number" id="${name}" value="${val}" min="0" max="20" inputmode="numeric">
+      <button type="button" data-step="${name}" data-d="1">+</button>
+    </div></div>`;
 }
 
-function renderSentLocs(){
-  document.getElementById('sentLocations').innerHTML=sentLocs.map(l=>`<div class="sent-item"><div class="s-title">📍 ${esc(l.name)}</div>${l.link?'<div class="s-meta">🔗 '+esc(l.link)+'</div>':''}<div class="s-meta">Gesendet ${new Date(l.time).toLocaleString('de-CH')}</div></div>`).join('');
+function wireForm(){
+  const editBtn = document.getElementById('editBtn');
+  if(editBtn) editBtn.onclick = () => { state.editing = true; render(); };
+
+  const cYes = document.getElementById('cYes'), cNo = document.getElementById('cNo');
+  const details = document.getElementById('details');
+  const saveBtn = document.getElementById('saveBtn');
+  if(!cYes) return;
+
+  let choice = state.guest.status !== 'offen' ? state.guest.status : null;
+
+  function refresh(){
+    cYes.classList.toggle('on-yes', choice==='zugesagt');
+    cNo.classList.toggle('on-no', choice==='abgesagt');
+    details.classList.toggle('show', choice==='zugesagt');
+    saveBtn.disabled = !choice;
+  }
+  cYes.onclick = () => { choice='zugesagt'; refresh(); };
+  cNo.onclick = () => { choice='abgesagt'; refresh(); };
+  refresh();
+
+  document.querySelectorAll('[data-step]').forEach(b=>{
+    b.onclick = () => {
+      const inp = document.getElementById(b.dataset.step);
+      let v = (parseInt(inp.value,10)||0) + parseInt(b.dataset.d,10);
+      inp.value = Math.max(0, Math.min(20, v));
+    };
+  });
+
+  saveBtn.onclick = async () => {
+    if(!choice) return;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner"></span>Speichern …';
+    const payload = {
+      slug: state.guest.slug,
+      status: choice,
+      adults: parseInt(document.getElementById('adults')?.value,10) || 0,
+      kids: parseInt(document.getElementById('kids')?.value,10) || 0,
+      comment: document.getElementById('comment')?.value || '',
+    };
+    try{
+      const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      const data = await r.json();
+      if(!r.ok || !data.ok) throw new Error(data.error||'Fehler');
+      state.guest = { ...state.guest, ...data.rsvp };
+      state.editing = false;
+      render();
+      toast(choice==='zugesagt' ? '✅ Zusage gespeichert!' : '❌ Absage gespeichert');
+    }catch(e){
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Antwort speichern';
+      toast('⚠️ ' + e.message);
+    }
+  };
 }
 
-// ═══ NACHRICHTEN ═══
-async function submitMsg(){
-  const text=document.getElementById('msgText').value.trim();if(!text){showError('Bitte Nachricht eingeben.');return}
-  const sender=userName||document.getElementById('fName')?.value.trim()||'Anonym';
-  const btn=document.getElementById('msgBtn');btn.disabled=true;btn.textContent='Senden...';
-  const msgId='ff_msg_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-  try{
-    await submitToInbox({
-      id:msgId,title:'💬 '+sender+': '+text.slice(0,60),description:text,priority:3,
-      senderApp:'Familienfest Portal',senderName:sender,tags:['familienfest'],
-      createdAt:new Date().toISOString(),status:'pending',entityType:'message',
-    });
-    sentMsgs.push({text:text.slice(0,80),time:new Date().toISOString()});saveLocal();renderSentMsgs();
-    document.getElementById('msgText').value='';
-    toast('💬 Nachricht gesendet!');
-  }catch(e){showError('Fehler: '+e.message)}
-  btn.disabled=false;btn.textContent='💬 Nachricht senden';
+function renderNoSlug(){
+  document.getElementById('hFam').textContent = 'Maag & Rusterholz';
+  root.innerHTML = card(notice('✉️','Persönlicher Einladungslink',
+    'Diese Einladung öffnet sich über deinen persönlichen Link. Bitte nutze den Link aus deiner Einladung.'));
+}
+function renderUnknown(){
+  root.innerHTML = card(notice('🤔','Einladung nicht gefunden',
+    'Dieser Einladungslink ist ungültig. Bitte prüfe den Link oder melde dich bei Laurin.'));
 }
 
-function renderSentMsgs(){
-  document.getElementById('sentMessages').innerHTML=sentMsgs.map(m=>`<div class="sent-item"><div class="s-title">💬 ${esc(m.text)}</div><div class="s-meta">Gesendet ${new Date(m.time).toLocaleString('de-CH')}</div></div>`).join('');
+// Helpers
+function card(inner){ return `<div class="card">${inner}</div>`; }
+function notice(em,h,p){ return `<div class="notice"><div class="em">${em}</div><h2>${h}</h2><p>${esc(p)}</p></div>`; }
+function esc(s){ const d=document.createElement('div'); d.textContent=s==null?'':s; return d.innerHTML; }
+function toast(m){
+  const d=document.createElement('div'); d.className='toast'; d.textContent=m;
+  document.body.appendChild(d);
+  setTimeout(()=>{ d.style.transition='opacity .3s'; d.style.opacity='0'; setTimeout(()=>d.remove(),300); },2800);
 }
-
-// ═══ HELPERS ═══
-function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
-function showError(m){const e=document.getElementById('errorMsg');e.textContent=m;e.style.display='block';e.scrollIntoView({behavior:'smooth',block:'center'})}
-function hideError(){document.getElementById('errorMsg').style.display='none'}
-function toast(m){const d=document.createElement('div');d.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 20px;background:var(--surface);border:2px solid var(--green);border-radius:10px;font-size:13px;font-weight:700;box-shadow:0 6px 24px rgba(0,0,0,.1);z-index:100;animation:su .3s';d.textContent=m;document.body.appendChild(d);setTimeout(()=>{d.style.transition='opacity .3s';d.style.opacity='0';setTimeout(()=>d.remove(),300)},3000)}
 </script>
-<style>@keyframes su{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}</style>
 </body>
 </html>
