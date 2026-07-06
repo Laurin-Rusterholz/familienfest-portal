@@ -1,5 +1,5 @@
 import { getStore } from "@netlify/blobs";
-import { GUESTS, getGuest, EVENT, PROJECT_ID, PROJECT_EXT_ID, PROJECT_NAME, publicMeta } from "./lib/config.mjs";
+import { GUESTS, getGuest, EVENT, POLL_DATES, DATE_STATES, isPollDate, publicMeta } from "./lib/config.mjs";
 
 const STORE = "famfest-inbox";
 const keyFor = (slug) => `rsvp:${slug}`;
@@ -41,6 +41,7 @@ function mergeGuest(guest, rsvp) {
     kids,
     count,
     comment: rsvp?.comment || "",
+    dates: rsvp?.dates && typeof rsvp.dates === "object" ? rsvp.dates : {},
     updatedAt: rsvp?.updatedAt || null,
   };
 }
@@ -60,18 +61,29 @@ export default async (req) => {
     if (action === "all") {
       const guests = [];
       let zugesagt = 0, abgesagt = 0, offen = 0, personen = 0;
+      // Pro Datum: wie viele Familien passt / vielleicht / passt-nicht / keine Angabe
+      const dateStats = POLL_DATES.map((d) => ({
+        id: d.id, label: d.label, favorite: !!d.favorite,
+        passt: 0, vielleicht: 0, "passt-nicht": 0, keine: 0,
+      }));
       for (const g of GUESTS) {
         const rsvp = await readRsvp(store, g.slug);
         const merged = mergeGuest(g, rsvp);
         if (merged.status === "zugesagt") { zugesagt++; personen += merged.count; }
         else if (merged.status === "abgesagt") abgesagt++;
         else offen++;
+        for (const ds of dateStats) {
+          const v = merged.dates[ds.id];
+          if (v === "passt" || v === "vielleicht" || v === "passt-nicht") ds[v]++;
+          else ds.keine++;
+        }
         guests.push(merged);
       }
       return json({
         ok: true,
         ...publicMeta(),
         guests,
+        dateStats,
         totals: { families: GUESTS.length, zugesagt, abgesagt, offen, personen },
       });
     }
@@ -81,7 +93,7 @@ export default async (req) => {
       const guest = getGuest(slug);
       if (!guest) return json({ ok: false, error: "Gast nicht gefunden" }, 404);
       const rsvp = await readRsvp(store, slug);
-      return json({ ok: true, event: EVENT, guest: mergeGuest(guest, rsvp) });
+      return json({ ok: true, event: EVENT, pollDates: POLL_DATES, guest: mergeGuest(guest, rsvp) });
     }
 
     return json({ ok: false, error: "Parameter 'gast' oder action=all erforderlich" }, 400);
@@ -107,6 +119,14 @@ export default async (req) => {
     const kids = status === "zugesagt" ? clamp(body.kids ?? 0, 0, 20) : 0;
     const comment = String(body.comment || "").slice(0, 500).trim();
 
+    // Termin-Umfrage: nur bekannte Datums-IDs und erlaubte Zustände übernehmen
+    const dates = {};
+    if (body.dates && typeof body.dates === "object") {
+      for (const [id, val] of Object.entries(body.dates)) {
+        if (isPollDate(id) && DATE_STATES.includes(val)) dates[id] = val;
+      }
+    }
+
     const record = {
       slug: guest.slug,
       name: guest.name,
@@ -114,6 +134,7 @@ export default async (req) => {
       adults,
       kids,
       comment,
+      dates,
       updatedAt: new Date().toISOString(),
     };
 
@@ -125,6 +146,13 @@ export default async (req) => {
       const label = status === "zugesagt" ? "Zusage" : "Absage";
       let desc = `${guest.name}\n\n${emoji} ${label}`;
       if (status === "zugesagt") desc += `\n👥 Personen: ${adults + kids} (${adults} Erw., ${kids} Kinder)`;
+      const dateLines = POLL_DATES
+        .filter((d) => dates[d.id])
+        .map((d) => {
+          const sym = dates[d.id] === "passt" ? "✅" : dates[d.id] === "vielleicht" ? "🤔" : "❌";
+          return `  ${sym} ${d.label}: ${dates[d.id]}`;
+        });
+      if (dateLines.length) desc += `\n📅 Termine:\n${dateLines.join("\n")}`;
       if (comment) desc += `\n💬 Bemerkung: ${comment}`;
       await store.set(`ff_rsvp_${guest.slug}`, JSON.stringify({
         id: `ff_rsvp_${guest.slug}`,
