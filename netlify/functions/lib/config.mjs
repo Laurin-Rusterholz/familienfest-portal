@@ -8,11 +8,11 @@ export const PROJECT_ID = "a809ecab-13d2-4b7e-8a8a-5c6fc96df171";
 export const PROJECT_EXT_ID = "PRJ-GX5PJ";
 export const PROJECT_NAME = "Familienfest – Einladungen & Zusagen";
 
-// Details zum Anlass (Schweizer Rechtschreibung: ss statt ß)
+// Details zum Anlass (Schweizer Rechtschreibung: durchgehend Doppel-s)
 export const EVENT = {
   title: "Familien-Brunch",
   family: "Maag & Rusterholz",
-  // Ein Samstag im November 2026 – bei Bedarf hier anpassen.
+  // Wunschtermin / Favorit – der finale Termin wird über die Umfrage bestimmt.
   date: "Samstag, 21. November 2026",
   time: "ab 10.00 Uhr",
   place: "Wird noch bekannt gegeben",
@@ -20,6 +20,23 @@ export const EVENT = {
     "Wir laden euch herzlich zu unserem gemeinsamen Familien-Brunch ein. " +
     "Damit wir gut planen können, bitten wir euch um eine kurze Rückmeldung.",
 };
+
+// ─── Termin-Umfrage (Doodle-Stil) ───────────────────────────
+// Drei Samstage im November 2026 zur Auswahl. Der Wunschtermin
+// (favorite) ist als Favorit markiert, der finale Termin ergibt
+// sich aus den Rückmeldungen.
+export const POLL_DATES = [
+  { id: "2026-11-14", label: "Sa, 14. November 2026" },
+  { id: "2026-11-21", label: "Sa, 21. November 2026", favorite: true },
+  { id: "2026-11-28", label: "Sa, 28. November 2026" },
+];
+
+// Erlaubte Zustände pro Datum
+export const DATE_STATES = ["passt", "vielleicht", "passt-nicht"];
+
+export function isPollDate(id) {
+  return POLL_DATES.some((d) => d.id === id);
+}
 
 // ─── Gästeliste (Seed-Daten) ────────────────────────────────
 // slug: eindeutiger, URL-tauglicher Schlüssel für den persönlichen Link
@@ -53,5 +70,6 @@ export function publicMeta() {
   return {
     project: { id: PROJECT_ID, extId: PROJECT_EXT_ID, name: PROJECT_NAME },
     event: EVENT,
+    pollDates: POLL_DATES,
   };
 }

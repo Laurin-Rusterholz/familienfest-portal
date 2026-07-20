@@ -69,6 +69,28 @@
   .notice p{font-size:14px;color:var(--muted)}
   .footer{text-align:center;padding:20px 24px 32px;font-size:11px;color:var(--muted)}
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 22px;background:var(--surface);border:2px solid var(--green);border-radius:12px;font-size:14px;font-weight:700;box-shadow:0 8px 28px rgba(0,0,0,.12);z-index:100}
+  /* Wunschtermin-Hinweis im Event-Block */
+  .sep-h{height:1px;background:var(--border);margin:20px 0 0}
+  .fav-hint{margin-top:14px;padding:10px 12px;background:var(--accent-l);border:1px solid var(--accent-b);border-radius:10px;font-size:12.5px;color:var(--accent-d);line-height:1.5}
+  .fav-hint strong{color:var(--accent-d)}
+  /* Termin-Umfrage (Doodle-Stil) */
+  .poll{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .poll-date{border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;background:var(--surface)}
+  .poll-date .pd-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .poll-date .pd-day{font-weight:700;font-size:14px}
+  .poll-date .fav-badge{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#fff;background:var(--accent);padding:2px 7px;border-radius:100px}
+  .poll-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .popt{padding:9px 4px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);cursor:pointer;text-align:center;font-size:12.5px;font-weight:600;color:var(--muted);transition:all .13s;user-select:none;-webkit-tap-highlight-color:transparent}
+  .popt .pe{display:block;font-size:16px;margin-bottom:2px}
+  .popt:hover{border-color:var(--muted)}
+  .popt.on-passt{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+  .popt.on-vielleicht{border-color:var(--amber,#b5893f);background:rgba(181,137,63,.12);color:#9a7433}
+  .popt.on-passt-nicht{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+  /* Termin-Zusammenfassung in der Status-Ansicht */
+  .poll-sum{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+  .poll-sum .psr{display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:7px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border)}
+  .poll-sum .psr .pv{font-weight:700}
+  .poll-sum .psr .pv.passt{color:var(--green)}.poll-sum .psr .pv.vielleicht{color:#9a7433}.poll-sum .psr .pv.passt-nicht{color:var(--red)}.poll-sum .psr .pv.keine{color:var(--muted);font-weight:400}
 </style>
 </head>
 <body>
@@ -92,7 +114,7 @@ const slug = params.get('gast');
 
 const root = document.getElementById('app');
 
-let state = { guest: null, event: null, editing: false };
+let state = { guest: null, event: null, pollDates: [], editing: false };
 
 init();
 
@@ -104,6 +126,7 @@ async function init(){
     if(!r.ok || !data.ok){ renderUnknown(); return; }
     state.guest = data.guest;
     state.event = data.event;
+    state.pollDates = data.pollDates || [];
     document.getElementById('hTitle').textContent = data.event.title;
     document.getElementById('hFam').textContent = data.event.family;
     state.editing = state.guest.status === 'offen';
@@ -123,10 +146,11 @@ function render(){
     <div class="greet-sub">wir freuen uns, euch persönlich einzuladen.</div>
     <div class="event">
       ${eventRow('🥐','Anlass', esc(ev.title))}
-      ${eventRow('📅','Datum', esc(ev.date))}
+      ${eventRow('⭐','Wunschtermin', esc(ev.date))}
       ${eventRow('🕙','Zeit', esc(ev.time))}
       ${eventRow('📍','Ort', esc(ev.place))}
     </div>
+    <div class="fav-hint">⭐ <strong>${esc(ev.date)}</strong> ist unser Wunschtermin — der finale Termin wird über die Umfrage bestimmt. Bitte gebt unten an, welche Samstage euch passen.</div>
     <div class="intro">${esc(ev.intro)}</div>
   </div>`;
 
@@ -163,7 +187,21 @@ function statusView(g){
       <span>${yes?'Ihr habt zugesagt — wir freuen uns!':'Ihr habt leider abgesagt.'}</span>
     </div>
     ${meta}
+    ${pollSummary(g)}
     <button class="edit-link" id="editBtn">Antwort ändern</button>`;
+}
+
+function pollSummary(g){
+  if(!state.pollDates.length) return '';
+  const lbl = { 'passt':'Passt', 'vielleicht':'Vielleicht', 'passt-nicht':'Passt nicht' };
+  const sym = { 'passt':'✅', 'vielleicht':'🤔', 'passt-nicht':'❌' };
+  const rows = state.pollDates.map(d=>{
+    const v = g.dates?.[d.id];
+    const cls = v || 'keine';
+    const txt = v ? sym[v]+' '+lbl[v] : '— keine Angabe';
+    return `<div class="psr"><span>${esc(d.label)}${d.favorite?' ⭐':''}</span><span class="pv ${cls}">${txt}</span></div>`;
+  }).join('');
+  return `<div class="status-meta" style="margin-top:14px"><strong>Eure Termin-Angaben:</strong></div><div class="poll-sum">${rows}</div>`;
 }
 
 function rsvpForm(g){
@@ -184,11 +222,33 @@ function rsvpForm(g){
         ${stepper('Kinder','kids',kids)}
       </div>
     </div>
+    <div class="sep-h"></div>
+    <h2 style="margin-top:20px">📅 Welche Samstage passen euch?</h2>
+    <div class="sub">Bitte für jeden Termin angeben (Doodle-Stil).</div>
+    <div class="poll">
+      ${state.pollDates.map(d => pollDateRow(d, g.dates?.[d.id])).join('')}
+    </div>
     <div style="margin-top:18px">
       <label><span class="lbl">Bemerkung (optional)</span>
       <textarea id="comment" placeholder="z.B. Allergien, Ankunftszeit, Grüsse …">${esc(g.comment||'')}</textarea></label>
     </div>
     <button class="btn-full" id="saveBtn" disabled>Antwort speichern</button>`;
+}
+
+function pollDateRow(d, cur){
+  const opt = (val,em,lbl) =>
+    `<div class="popt ${cur===val?'on-'+val:''}" data-date="${d.id}" data-val="${val}"><span class="pe">${em}</span>${lbl}</div>`;
+  return `<div class="poll-date">
+    <div class="pd-head">
+      <span class="pd-day">${esc(d.label)}</span>
+      ${d.favorite?'<span class="fav-badge">⭐ Wunschtermin</span>':''}
+    </div>
+    <div class="poll-opts">
+      ${opt('passt','✅','Passt')}
+      ${opt('vielleicht','🤔','Vielleicht')}
+      ${opt('passt-nicht','❌','Passt nicht')}
+    </div>
+  </div>`;
 }
 
 function stepper(label,name,val){
@@ -229,6 +289,19 @@ function wireForm(){
     };
   });
 
+  // Termin-Umfrage: pro Datum genau einen Zustand wählen
+  const pollChoices = { ...(state.guest.dates || {}) };
+  document.querySelectorAll('.popt').forEach(el=>{
+    el.onclick = () => {
+      const date = el.dataset.date, val = el.dataset.val;
+      pollChoices[date] = val;
+      document.querySelectorAll(`.popt[data-date="${date}"]`).forEach(sib=>{
+        ['on-passt','on-vielleicht','on-passt-nicht'].forEach(c=>sib.classList.remove(c));
+      });
+      el.classList.add('on-'+val);
+    };
+  });
+
   saveBtn.onclick = async () => {
     if(!choice) return;
     saveBtn.disabled = true;
@@ -239,6 +312,7 @@ function wireForm(){
       adults: parseInt(document.getElementById('adults')?.value,10) || 0,
       kids: parseInt(document.getElementById('kids')?.value,10) || 0,
       comment: document.getElementById('comment')?.value || '',
+      dates: pollChoices,
     };
     try{
       const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
