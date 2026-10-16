@@ -146,11 +146,12 @@ function render(){
     <div class="greet-sub">wir freuen uns, euch persönlich einzuladen.</div>
     <div class="event">
       ${eventRow('🥐','Anlass', esc(ev.title))}
-      ${eventRow('⭐','Wunschtermin', esc(ev.date))}
+      ${eventRow('📅',ev.confirmed?'Definitiver Termin':'Wunschtermin', esc(ev.date))}
       ${eventRow('🕙','Zeit', esc(ev.time))}
       ${eventRow('📍','Ort', esc(ev.place))}
     </div>
-    <div class="fav-hint">⭐ <strong>${esc(ev.date)}</strong> ist unser Wunschtermin — der finale Termin wird über die Umfrage bestimmt. Bitte gebt unten an, welche Samstage euch passen.</div>
+    <div class="fav-hint">${ev.confirmed ? `Der Termin und der Ort sind bestätigt. <strong>Bitte beachtet: Beginn um 09:30 Uhr statt der früher genannten 10:00 Uhr.</strong>` : `⭐ <strong>${esc(ev.date)}</strong> ist unser Wunschtermin — der finale Termin wird über die Umfrage bestimmt.`}</div>
+    ${ev.breakfast ? `<p>${esc(ev.breakfast)}</p><p>Definitive Gästezahl ans Restaurant bis ${esc(ev.replyDeadline)}. Bitte meldet euch möglichst bald.</p>` : ''}
     <div class="intro">${esc(ev.intro)}</div>
   </div>`;
 
@@ -170,7 +171,8 @@ function eventRow(ic,k,v){
 }
 
 function statusView(g){
-  const yes = g.status === 'zugesagt';
+  const attendance = g.eventStatus || g.status;
+  const yes = attendance === 'zugesagt';
   let meta = '';
   if(yes){
     const ad = g.adults + ' ' + (g.adults===1?'Erwachsener':'Erwachsene');
@@ -182,9 +184,9 @@ function statusView(g){
     meta = `<div class="status-meta"><strong>Bemerkung:</strong> ${esc(g.comment)}</div>`;
   }
   return `
-    <div class="status-banner ${yes?'yes':'no'}">
-      <span class="big">${yes?'✅':'❌'}</span>
-      <span>${yes?'Ihr habt zugesagt — wir freuen uns!':'Ihr habt leider abgesagt.'}</span>
+    <div class="status-banner ${yes?'yes':attendance==='abgesagt'?'no':''}">
+      <span class="big">${yes?'✅':attendance==='abgesagt'?'❌':'🤔'}</span>
+      <span>${yes?'Ihr habt für den 21. November zugesagt — wir freuen uns!':attendance==='abgesagt'?'Ihr habt für den 21. November abgesagt.':'Eure definitive Teilnahme am 21. November ist noch offen.'}</span>
     </div>
     ${meta}
     ${pollSummary(g)}
@@ -201,17 +203,18 @@ function pollSummary(g){
     const txt = v ? sym[v]+' '+lbl[v] : '— keine Angabe';
     return `<div class="psr"><span>${esc(d.label)}${d.favorite?' ⭐':''}</span><span class="pv ${cls}">${txt}</span></div>`;
   }).join('');
-  return `<div class="status-meta" style="margin-top:14px"><strong>Eure Termin-Angaben:</strong></div><div class="poll-sum">${rows}</div>`;
+  return `<div class="status-meta" style="margin-top:14px"><strong>Bisherige Termin-Angaben:</strong></div><div class="poll-sum">${rows}</div>`;
 }
 
 function rsvpForm(g){
-  const yes = g.status === 'zugesagt';
-  const no = g.status === 'abgesagt';
+  const attendance = g.eventStatus || g.status;
+  const yes = attendance === 'zugesagt';
+  const no = attendance === 'abgesagt';
   const adults = g.adults ?? g.defaultAdults ?? 2;
   const kids = g.kids ?? 0;
   return `
     <h2>Eure Rückmeldung</h2>
-    <div class="sub">Seid ihr beim Brunch dabei?</div>
+    <div class="sub">Seid ihr am ${esc(state.event.date)} beim Brunch dabei?</div>
     <div class="rsvp-choice">
       <div class="choice ${yes?'on-yes':''}" id="cYes" data-v="zugesagt"><span class="ce">🙌</span>Wir kommen</div>
       <div class="choice ${no?'on-no':''}" id="cNo" data-v="abgesagt"><span class="ce">😔</span>Wir kommen nicht</div>
@@ -222,12 +225,9 @@ function rsvpForm(g){
         ${stepper('Kinder','kids',kids)}
       </div>
     </div>
-    <div class="sep-h"></div>
+    ${state.event.confirmed ? '' : `<div class="sep-h"></div>
     <h2 style="margin-top:20px">📅 Welche Samstage passen euch?</h2>
-    <div class="sub">Bitte für jeden Termin angeben (Doodle-Stil).</div>
-    <div class="poll">
-      ${state.pollDates.map(d => pollDateRow(d, g.dates?.[d.id])).join('')}
-    </div>
+    <div class="poll">${state.pollDates.map(d => pollDateRow(d, g.dates?.[d.id])).join('')}</div>`}
     <div style="margin-top:18px">
       <label><span class="lbl">Bemerkung (optional)</span>
       <textarea id="comment" placeholder="z.B. Allergien, Ankunftszeit, Grüsse …">${esc(g.comment||'')}</textarea></label>
@@ -269,7 +269,8 @@ function wireForm(){
   const saveBtn = document.getElementById('saveBtn');
   if(!cYes) return;
 
-  let choice = state.guest.status !== 'offen' ? state.guest.status : null;
+  const attendance = state.guest.eventStatus || state.guest.status;
+  let choice = attendance !== 'offen' ? attendance : null;
 
   function refresh(){
     cYes.classList.toggle('on-yes', choice==='zugesagt');
@@ -312,7 +313,7 @@ function wireForm(){
       adults: parseInt(document.getElementById('adults')?.value,10) || 0,
       kids: parseInt(document.getElementById('kids')?.value,10) || 0,
       comment: document.getElementById('comment')?.value || '',
-      dates: pollChoices,
+      dates: state.event.confirmed ? { ...pollChoices, [state.event.dateId]: choice === "zugesagt" ? "passt" : "passt-nicht" } : pollChoices,
     };
     try{
       const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
