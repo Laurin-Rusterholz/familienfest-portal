@@ -12,13 +12,17 @@ export const PROJECT_NAME = "Familienfest – Einladungen & Zusagen";
 export const EVENT = {
   title: "Familien-Brunch",
   family: "Maag & Rusterholz",
-  // Wunschtermin / Favorit – der finale Termin wird über die Umfrage bestimmt.
+  // Definitiv durch ØYA bestätigt; Menüwahl durch Laurin am 16.10.2026.
+  confirmed: true,
+  dateId: "2026-11-21",
   date: "Samstag, 21. November 2026",
-  time: "ab 10.00 Uhr",
-  place: "Wird noch bekannt gegeben",
+  time: "09:30 Uhr",
+  place: "ØYA Bar Kafé Klub, Schwertgasse 27, 9000 St. Gallen",
+  breakfast: "Grosses Frühstück für alle Erwachsenen: CHF 28 inklusive einem Heissgetränk und einem Saft. Schulkinder: CHF 8 inklusive Heissgetränk und Saft. Klein- und Kindergartenkinder: CHF 6 für Polarbrød; Mitbedienen bei den Erwachsenen möglich.",
+  replyDeadline: "18. November 2026",
   intro:
     "Wir laden euch herzlich zu unserem gemeinsamen Familien-Brunch ein. " +
-    "Damit wir gut planen können, bitten wir euch um eine kurze Rückmeldung.",
+    "Bitte bestätigt eure Teilnahme für den 21. November und meldet Kinderaltersgruppen, Unverträglichkeiten und benötigte Kinderstühle in der Bemerkung.",
 };
 
 // ─── Termin-Umfrage (Doodle-Stil) ───────────────────────────
@@ -72,4 +76,15 @@ export function publicMeta() {
     event: EVENT,
     pollDates: POLL_DATES,
   };
+}
+
+// Frühere allgemeine Zusagen gelten nur mit passender Terminantwort.
+// Gespeicherte Antworten bleiben unverändert.
+export function attendanceForEvent(guest) {
+  if (!EVENT.confirmed) return guest.status || "offen";
+  if (guest.status === "abgesagt") return "abgesagt";
+  const answer = guest.dates?.[EVENT.dateId];
+  if (answer === "passt-nicht") return "abgesagt";
+  if (guest.status === "zugesagt" && answer === "passt") return "zugesagt";
+  return "offen";
 }
