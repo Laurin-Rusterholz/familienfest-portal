@@ -1,5 +1,5 @@
 import { getStore } from "@netlify/blobs";
-import { GUESTS, getGuest, EVENT, POLL_DATES, DATE_STATES, isPollDate, publicMeta } from "./lib/config.mjs";
+import { GUESTS, getGuest, EVENT, POLL_DATES, DATE_STATES, isPollDate, publicMeta, attendanceForEvent } from "./lib/config.mjs";
 
 const STORE = "famfest-inbox";
 const keyFor = (slug) => `rsvp:${slug}`;
@@ -36,6 +36,7 @@ function mergeGuest(guest, rsvp) {
     greeting: guest.greeting,
     email: guest.email,
     defaultAdults: guest.defaultAdults ?? 2,
+    eventStatus: attendanceForEvent({ status, dates: rsvp?.dates }),
     status,
     adults,
     kids,
@@ -69,8 +70,8 @@ export default async (req) => {
       for (const g of GUESTS) {
         const rsvp = await readRsvp(store, g.slug);
         const merged = mergeGuest(g, rsvp);
-        if (merged.status === "zugesagt") { zugesagt++; personen += merged.count; }
-        else if (merged.status === "abgesagt") abgesagt++;
+        if (merged.eventStatus === "zugesagt") { zugesagt++; personen += merged.count; }
+        else if (merged.eventStatus === "abgesagt") abgesagt++;
         else offen++;
         for (const ds of dateStats) {
           const v = merged.dates[ds.id];
