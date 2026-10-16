@@ -122,13 +122,13 @@ const DSYM = { 'passt':'✅', 'vielleicht':'🤔', 'passt-nicht':'❌' };
 function render(data){
   const { guests, totals, event, project } = data;
   const dateStats = data.dateStats || [];
-  document.getElementById('hEvent').textContent = 'Wunschtermin: ' + event.date + ' · ' + event.time;
+  document.getElementById('hEvent').textContent = (event.confirmed ? 'Definitiver Termin: ' : 'Wunschtermin: ') + event.date + ' · ' + event.time + ' · ' + event.place;
 
   document.getElementById('stats').innerHTML = `
-    ${stat('g', totals.zugesagt, 'Zugesagt')}
+    ${stat('g', totals.zugesagt, 'Zugesagt am 21.11.')}
     ${stat('r', totals.abgesagt, 'Abgesagt')}
     ${stat('a', totals.offen, 'Offen')}
-    ${stat('', totals.personen, 'Personen total')}`;
+    ${stat('', totals.personen, 'Personen am 21.11.')}`;
 
   // Besten Termin bestimmen: meiste "passt", dann wenigste "passt-nicht"
   let bestId = null, best = null;
@@ -137,13 +137,13 @@ function render(data){
       best = d; bestId = d.id;
     }
   }
-  if(best && best.passt === 0) bestId = null; // noch keine Zusagen -> keinen hervorheben
+  if(event.confirmed || (best && best.passt === 0)) bestId = null; // noch keine Zusagen -> keinen hervorheben
 
   document.getElementById('pollCards').innerHTML = dateStats.map(d => `
     <div class="pcard ${d.id===bestId?'best':''}">
       <div class="pc-day">${esc(d.label)}</div>
       <div class="pc-tags">
-        ${d.favorite?'<span class="pc-tag fav">⭐ Wunschtermin</span>':''}
+        ${d.favorite?`<span class="pc-tag fav">${event.confirmed?'📅 Definitiver Termin':'⭐ Wunschtermin'}</span>`:''}
         ${d.id===bestId?'<span class="pc-tag best">Bester Termin</span>':''}
       </div>
       <div class="pc-row passt"><span>✅ Passt</span><span class="pc-n">${d.passt}</span></div>
@@ -158,8 +158,9 @@ function render(data){
   ).join('');
 
   const rows = guests.map(g => {
-    const b = `<span class="badge ${g.status}">${badgeIcon(g.status)} ${cap(g.status)}</span>`;
-    const persons = g.status === 'zugesagt'
+    const status = g.eventStatus || g.status;
+    const b = `<span class="badge ${status}">${badgeIcon(status)} ${cap(status)}</span>`;
+    const persons = status === 'zugesagt'
       ? `${g.count} <span style="color:var(--muted);font-weight:400">(${g.adults}E/${g.kids}K)</span>`
       : '<span class="off">—</span>';
     const cmt = g.comment ? `<span class="cmt">💬 ${esc(g.comment)}</span>` : '';
